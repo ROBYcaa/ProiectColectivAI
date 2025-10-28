@@ -8,11 +8,15 @@ function App() {
   const [backendMessage, setBackendMessage] = useState("Checking backend...");
 
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL; // 🔹 citim din .env
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
     fetch(`${API_URL}/`)
       .then((res) => res.json())
-      .then((data) => setBackendMessage(data.message || "No message"))
-      .catch((err) => setBackendMessage("Backend unreachable ❌"));
+      .then((data) => setBackendMessage(data.message))
+      .catch((err) => {
+        console.error("Backend fetch error:", err);
+        setBackendMessage("Backend unreachable ❌");
+      });
   }, []);
 
   return (
@@ -41,10 +45,10 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
 
-      {/* 🔹 Adăugăm secțiunea de test pentru backend */}
-      <div style={{ marginTop: "2rem" }}>
+      {/* 🔹 Backend connectivity section */}
+      <div style={{ marginTop: "2rem", textAlign: "center" }}>
         <h3>Backend status:</h3>
-        <p>{backendMessage}</p>
+        <p style={{ fontWeight: "bold" }}>{backendMessage}</p>
       </div>
     </>
   );

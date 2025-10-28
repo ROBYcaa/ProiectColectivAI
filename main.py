@@ -11,18 +11,18 @@ load_dotenv()
 app = FastAPI(title="Proiect Colectiv AI Backend")
 
 # === CONFIGURARE CORS ===
-# Se citește domeniul frontendului din .env
 frontend_origin = os.getenv("FRONTEND_ORIGIN")
 
-# Dacă nu e setat, folosim localhost pentru dezvoltare
+# Domenii permise explicit (inclusiv HTTPS)
 origins = [
-    "http://localhost:5173",  # Vite (React local)
+    "http://localhost:5173",           # React local
+    "https://localhost:5173",          # uneori Vite poate folosi HTTPS local
+    "https://proiectcolectivai-frontend.onrender.com",  # frontend live
 ]
 
-if frontend_origin:
+if frontend_origin and frontend_origin not in origins:
     origins.append(frontend_origin)
 
-# Adaugă middleware-ul CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -30,6 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # === IMPORT ROUTERS ===
 from auth.auth_router import router as auth_router
