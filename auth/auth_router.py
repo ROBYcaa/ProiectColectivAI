@@ -9,9 +9,8 @@ from typing import Optional
 import os
 from dotenv import load_dotenv, find_dotenv
 
-# ============================================================
-# 🔧 CONFIGURARE .env
-# ============================================================
+
+# CoONFIGURARE .env
 load_dotenv(find_dotenv())  # caută și încarcă fișierul .env
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -21,21 +20,20 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY not found. Please create a .env file in project root.")
 
-# ============================================================
-# 🧩 INITIALIZARE
-# ============================================================
+# INITIALIZARE ROUTER + SECURITATE
 router = APIRouter(prefix="/auth", tags=["auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-# ============================================================
-# 💾 DATABASE (SQLite demo local)
-# ============================================================
+
+# DATABASE (SQLite demo local)
+# Pentru demo folosim o bază de date locală app.db
 DATABASE_URL = "sqlite:///./app.db"
 
-engine = create_engine(
+engine = create_engine(# create_engine: creează conexiunea
     DATABASE_URL, connect_args={"check_same_thread": False}
 )
+# SessionLocal: fabrică de sesiuni DB pentru fiecare request
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -58,9 +56,8 @@ def get_db():
     finally:
         db.close()
 
-# ============================================================
-# 🧠 FUNCȚII UTILE
-# ============================================================
+
+# FUNCTII UTILE
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
@@ -74,15 +71,13 @@ def create_access_token(sub: str, minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) ->
     payload = {"sub": sub, "exp": exp}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-# ============================================================
-# 🚪 ENDPOINTURI
-# ============================================================
 
+# ENDPOINTURI
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
-    Login endpoint — primește username (email) și parolă,
-    returnează un token JWT valid dacă utilizatorul este corect.
+    Login endpoint — primeste username (email) si parola,
+    returneaza un token JWT valid dacă utilizatorul este corect.
     """
     user: Optional[User] = db.query(User).filter(User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.password_hash):
@@ -98,7 +93,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.get("/me")
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """
-    Returnează datele utilizatorului curent pe baza tokenului JWT.
+    Returneaza datele utilizatorului curent pe baza tokenului JWT.
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -112,9 +107,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
     return {"id": user.id, "email": user.email}
 
-# ============================================================
-# 🧪 UTILIZATOR DEMO (creat automat dacă nu există)
-# ============================================================
+
+# UTILIZATOR DEMO (creat automat dacă nu exista)
 def seed_demo_user():
     db = SessionLocal()
     demo_email = "demo@example.com"
@@ -123,9 +117,8 @@ def seed_demo_user():
     if not existing:
         db.add(User(email=demo_email, password_hash=hash_password(demo_pass)))
         db.commit()
-        print(f"✅ Created demo user: {demo_email} / {demo_pass}")
+        print(f"Created demo user: {demo_email} / {demo_pass}")
     db.close()
 
 
-# Rulează automat când fișierul e importat
 seed_demo_user()
