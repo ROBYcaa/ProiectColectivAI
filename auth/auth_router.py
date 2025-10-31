@@ -96,6 +96,17 @@ class RegisterRequest(BaseModel):
         if password != v:
             raise ValueError("Passwords do not match.")
         return v
+    
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+    @field_validator("password")
+    def validate_not_empty(cls, value):
+        if not value or len(value.strip()) == 0:
+            raise ValueError("Password cannot be empty.")
+        return value
+
 
 #   ENDPOINT REGISTER  
 @router.post("/register", status_code=201)
@@ -122,13 +133,13 @@ def register_user(request: RegisterRequest, db: Session = Depends(get_db)):
 
 #   ENDPOINT LOGIN  
 @router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(request: LoginRequest, db: Session = Depends(get_db)):
     """
-    Login endpoint — primește username (email) și parolă,
+    Login endpoint — primește email și parolă,
     returnează un token JWT valid dacă utilizatorul este corect.
     """
-    user: Optional[User] = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user or not verify_password(request.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
@@ -136,6 +147,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     token = create_access_token(str(user.id))
     return {"access_token": token, "token_type": "bearer"}
+
 
 #   ENDPOINT USER INFO (/me)  
 @router.get("/me")
