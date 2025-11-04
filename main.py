@@ -4,19 +4,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-# === Încarcă variabilele din .env ===
+# Incarca variabilele din .env 
 load_dotenv()
 
 app = FastAPI(title="Proiect Colectiv AI Backend")
 
-# === CONFIGURARE CORS ===
+# CONFIGURARE CORS
 origins = [
-    "http://localhost:5173",                     # frontend local
-    "https://localhost:5173",                    # uneori Vite rulează HTTPS local
-    "https://proiectcolectivai-frontend.onrender.com",  # frontend deployat
+    "http://localhost:5173",  # vite dev
+    "http://127.0.0.1:5173",  # fallback
+    "http://localhost:5175",  # dacă vite rulează pe alt port
+    "http://127.0.0.1:5175",
 ]
 
-# Adaugă și din .env dacă există FRONTEND_ORIGIN
+
+# Adauga si din .env daca exista FRONTEND_ORIGIN
 frontend_origin = os.getenv("FRONTEND_ORIGIN")
 if frontend_origin and frontend_origin not in origins:
     origins.append(frontend_origin)
@@ -29,11 +31,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# === Importă și include routere ===
+# Importa si include routere
 from auth.auth_router import router as auth_router
 app.include_router(auth_router)
 
-# === Rute test ===
+# Rute test
 @app.get("/")
 def read_root():
     return {"message": "Backend running successfully 🚀"}
