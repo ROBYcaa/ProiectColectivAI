@@ -1,12 +1,11 @@
 /* === LOGIN PAGE STYLING === */
 .login-container {
-  /* Fundal imagine din Figma */
+  /* Fundal imagine */
   background-image: url("../assets/A4 - Poster 3 (1).png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 
-  /* Overlay subtil pentru lizibilitate */
   position: relative;
   min-height: 100vh;
   display: flex;
@@ -15,7 +14,6 @@
   font-family: "Inter", sans-serif;
 }
 
-/* Un strat semitransparent peste fundal (pentru contrast mai bun cu cardul) */
 .login-container::before {
   content: "";
   position: absolute;

@@ -1,5 +1,10 @@
+// Acest fisier gestioneaza toate cererile legate de autentificare:
+//  - login
+//  - verificarea utilizatorului curent (/me)
+//  - manipularea tokenului JWT
 const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
+// Trimite datele de autentificare catre backend si primeste tokenul JWT
 export async function loginUser(email, password) {
   const response = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
@@ -15,6 +20,7 @@ export async function loginUser(email, password) {
   return await response.json(); // { access_token, token_type }
 }
 
+// Verifica datele utilizatorului curent folosind tokenul JWT din localStorage
 export async function fetchMe() {
   const token = localStorage.getItem("token");
   const res = await fetch(`${API_BASE}/auth/me`, {

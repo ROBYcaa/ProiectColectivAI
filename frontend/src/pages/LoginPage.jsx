@@ -9,11 +9,13 @@ export default function LoginPage({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+   // Functia de login
   async function handleLogin(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault(); // opreste reincarcarea paginii la submit
+    setError(""); // curata erorile anterioare
+    setLoading(true); // seteaza starea de loading
     try {
+      // Trimitem cererea POST catre backend (endpointul /auth/login)
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,6 +27,7 @@ export default function LoginPage({ onLoginSuccess }) {
         throw new Error(data.detail || "Invalid credentials");
       }
       const data = await res.json();
+      // Salvam tokenul local pentru sesiune
       localStorage.setItem("token", data.access_token);
       onLoginSuccess && onLoginSuccess(data.access_token);
     } catch (err) {

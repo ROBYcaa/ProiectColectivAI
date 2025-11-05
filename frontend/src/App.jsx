@@ -12,6 +12,7 @@ export default function App() {
 
   const [backendMessage, setBackendMessage] = useState("Checking backend...");
 
+  // Health check — verificam daca backendul este pornit
   useEffect(() => {
     fetch(`${API_URL}/`)
       .then((res) => res.json())
@@ -19,14 +20,16 @@ export default function App() {
       .catch(() => setBackendMessage("Backend unreachable ❌"));
   }, []);
 
+    // Verificare token: daca utilizatorul e deja logat
   useEffect(() => {
     if (!token) {
       setMe(null);
       return;
     }
 
-    let cancelled = false;
+    let cancelled = false;// protectie pentru unmount (evita memory leaks)
 
+    // auto-login check
     (async () => {
       try {
         const res = await fetch(`${API_URL}/auth/me`, {
@@ -40,9 +43,12 @@ export default function App() {
           }
           return;
         }
+
+        // daca totul e ok, obtinem datele utilizatorului
         const data = await res.json();
         if (!cancelled) setMe(data);
       } catch {
+        // daca apare o eroare de retea, resetam tot
         localStorage.removeItem("token");
         if (!cancelled) {
           setToken("");
@@ -56,12 +62,39 @@ export default function App() {
     };
   }, [token]);
 
+    // Logout
   function handleLogout() {
     localStorage.removeItem("token");
     setToken("");
     setMe(null);
   }
 
+  // RENDER
+
+  // Daca utilizatorul NU este logat, afisam pagina de login
+  if (!token) {
+    return (
+      <>
+        <LoginPage onLoginSuccess={(t) => setToken(t)} />
+        <div
+          style={{
+            position: "fixed",
+            bottom: 10,
+            left: 0,
+            right: 0,
+            textAlign: "center",
+            fontSize: 12,
+            color: "#666",
+            pointerEvents: "none",
+          }}
+        >
+          {backendMessage}
+        </div>
+      </>
+    );
+  }
+
+  // Daca utilizatorul este logat, afisam un mic dashboard de confirmare
   return (
     <Router>
       <Routes>
