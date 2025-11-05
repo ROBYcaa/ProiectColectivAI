@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./RegisterPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
@@ -26,7 +27,11 @@ export default function RegisterPage() {
       const res = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, confirm_password: confirmPassword }),
+        body: JSON.stringify({
+          email,
+          password,
+          confirm_password: confirmPassword,
+        }),
       });
 
       const data = await res.json();
@@ -90,7 +95,7 @@ export default function RegisterPage() {
         {success && <p className="success">{success}</p>}
 
         <div className="links">
-          <a href="/login">Already have an account? Login</a>
+          <Link to="/login">Already have an account? Login</Link>
         </div>
       </div>
     </div>
