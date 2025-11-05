@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./LoginPage.css"; // vom face fișierul imediat
+import "./LoginPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -9,11 +9,13 @@ export default function LoginPage({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+   // Functia de login
   async function handleLogin(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+    e.preventDefault(); // opreste reincarcarea paginii la submit
+    setError(""); // curata erorile anterioare
+    setLoading(true); // seteaza starea de loading
     try {
+      // Trimitem cererea POST catre backend (endpointul /auth/login)
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -21,7 +23,9 @@ export default function LoginPage({ onLoginSuccess }) {
       });
       if (!res.ok) throw new Error("Invalid credentials");
       const data = await res.json();
+      // Salvam tokenul local pentru sesiune
       localStorage.setItem("token", data.access_token);
+      // Apelam functia primita prin props
       onLoginSuccess(data.access_token);
     } catch (err) {
       setError(err.message);
