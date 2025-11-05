@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage"; // ✅ import nou
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export default function App() {
-  // auth state
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [me, setMe] = useState(null);
   const [error, setError] = useState("");
-
-  // backend health (optional – small footer text)
   const [backendMessage, setBackendMessage] = useState("Checking backend...");
+  const [showRegister, setShowRegister] = useState(false); // ✅ toggle între login / register
 
-  // Health check once
+  // Health check la pornire
   useEffect(() => {
     fetch(`${API_URL}/`)
       .then((res) => res.json())
@@ -20,7 +19,7 @@ export default function App() {
       .catch(() => setBackendMessage("Backend unreachable ❌"));
   }, []);
 
-  // When we have a token, try to load /auth/me
+  // Dacă avem token, verificăm /auth/me
   useEffect(() => {
     if (!token) {
       setMe(null);
@@ -36,7 +35,6 @@ export default function App() {
         });
 
         if (!res.ok) {
-          // token invalid/expired – clear it gracefully
           localStorage.removeItem("token");
           if (!cancelled) {
             setToken("");
@@ -47,7 +45,7 @@ export default function App() {
 
         const data = await res.json();
         if (!cancelled) {
-          setMe(data); // { id, email }
+          setMe(data);
           setError("");
         }
       } catch {
@@ -70,13 +68,19 @@ export default function App() {
     setMe(null);
   }
 
-  // ============= RENDER =============
+  // ================= RENDER =================
 
-  // Not logged in -> show the Figma-like login page
   if (!token) {
     return (
       <>
-        <LoginPage onLoginSuccess={(t) => setToken(t)} />
+        {/* ✅ Switch simplu între login/register */}
+        {showRegister ? (
+          <RegisterPage />
+        ) : (
+          <LoginPage onLoginSuccess={(t) => setToken(t)} />
+        )}
+
+        {/* ✅ Footer mic */}
         <div
           style={{
             position: "fixed",
@@ -91,11 +95,37 @@ export default function App() {
         >
           {backendMessage}
         </div>
+
+        {/* ✅ Butoane pentru comutare între Login și Register */}
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            fontSize: 14,
+          }}
+        >
+          {showRegister ? (
+            <button
+              onClick={() => setShowRegister(false)}
+              style={switchButtonStyle}
+            >
+              Already have an account? Login
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowRegister(true)}
+              style={switchButtonStyle}
+            >
+              Create account
+            </button>
+          )}
+        </div>
       </>
     );
   }
 
-  // Logged in -> simple welcome card (you can route to Dashboard later)
+  // ✅ Logged in
   return (
     <div
       style={{
@@ -122,24 +152,12 @@ export default function App() {
         </h2>
 
         <p style={{ color: "#555", marginTop: 0 }}>
-          Token salvat în <code>localStorage</code>. Rutele protejate pot folosi
-          headerul <code>Authorization: Bearer &lt;token&gt;</code>.
+          Token salvat în <code>localStorage</code>.  
+          Rutele protejate pot folosi headerul:  
+          <code>Authorization: Bearer &lt;token&gt;</code>.
         </p>
 
-        <button
-          onClick={handleLogout}
-          style={{
-            marginTop: 8,
-            padding: "10px 18px",
-            border: "none",
-            borderRadius: 8,
-            background:
-              "linear-gradient(90deg, rgba(48,167,215,1) 0%, rgba(194,116,12,1) 100%)",
-            color: "#fff",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={handleLogout} style={logoutButtonStyle}>
           Logout
         </button>
 
@@ -158,9 +176,7 @@ export default function App() {
           {me ? JSON.stringify(me, null, 2) : "Loading user..."}
         </pre>
 
-        {error && (
-          <div style={{ color: "tomato", marginTop: 12 }}>{error}</div>
-        )}
+        {error && <div style={{ color: "tomato", marginTop: 12 }}>{error}</div>}
       </div>
 
       <div
@@ -180,3 +196,28 @@ export default function App() {
     </div>
   );
 }
+
+// ================= Styles =================
+const switchButtonStyle = {
+  padding: "8px 14px",
+  border: "none",
+  borderRadius: "8px",
+  background:
+    "linear-gradient(90deg, rgba(48,167,215,1) 0%, rgba(194,116,12,1) 100%)",
+  color: "#fff",
+  fontWeight: 600,
+  cursor: "pointer",
+  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+};
+
+const logoutButtonStyle = {
+  marginTop: 8,
+  padding: "10px 18px",
+  border: "none",
+  borderRadius: 8,
+  background:
+    "linear-gradient(90deg, rgba(48,167,215,1) 0%, rgba(194,116,12,1) 100%)",
+  color: "#fff",
+  fontWeight: 600,
+  cursor: "pointer",
+};
