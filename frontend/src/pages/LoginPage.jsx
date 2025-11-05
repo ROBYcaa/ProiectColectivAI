@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./LoginPage.css";
+import "./LoginPage.css"; // vom folosi același fișier CSS
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -21,12 +21,15 @@ export default function LoginPage({ onLoginSuccess }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      if (!res.ok) throw new Error("Invalid credentials");
+      if (!res.ok) {
+        // try to parse error detail
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "Invalid credentials");
+      }
       const data = await res.json();
       // Salvam tokenul local pentru sesiune
       localStorage.setItem("token", data.access_token);
-      // Apelam functia primita prin props
-      onLoginSuccess(data.access_token);
+      onLoginSuccess && onLoginSuccess(data.access_token);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,7 +73,8 @@ export default function LoginPage({ onLoginSuccess }) {
 
         <div className="links">
           <a href="#">Forgot password?</a>
-          <a href="#">Don’t have an account? Register</a>
+          {/* link actualizat către pagina de înregistrare */}
+          <a href="/register">Don’t have an account? Register</a>
         </div>
       </div>
     </div>
