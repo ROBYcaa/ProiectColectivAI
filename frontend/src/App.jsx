@@ -12,7 +12,7 @@ export default function App() {
   // backend health (optional – small footer text)
   const [backendMessage, setBackendMessage] = useState("Checking backend...");
 
-  // Health check once
+  // Health check — verificam daca backendul este pornit
   useEffect(() => {
     fetch(`${API_URL}/`)
       .then((res) => res.json())
@@ -20,15 +20,16 @@ export default function App() {
       .catch(() => setBackendMessage("Backend unreachable ❌"));
   }, []);
 
-  // When we have a token, try to load /auth/me
+    // Verificare token: daca utilizatorul e deja logat
   useEffect(() => {
     if (!token) {
       setMe(null);
       return;
     }
 
-    let cancelled = false;
+    let cancelled = false;// protectie pentru unmount (evita memory leaks)
 
+    // auto-login check
     (async () => {
       try {
         const res = await fetch(`${API_URL}/auth/me`, {
@@ -36,7 +37,7 @@ export default function App() {
         });
 
         if (!res.ok) {
-          // token invalid/expired – clear it gracefully
+          // daca tokenul e invalid/expirat, il stergem si resetam starea
           localStorage.removeItem("token");
           if (!cancelled) {
             setToken("");
@@ -45,12 +46,14 @@ export default function App() {
           return;
         }
 
+        // daca totul e ok, obtinem datele utilizatorului
         const data = await res.json();
         if (!cancelled) {
           setMe(data); // { id, email }
           setError("");
         }
       } catch {
+        // daca apare o eroare de retea, resetam tot
         localStorage.removeItem("token");
         if (!cancelled) {
           setToken("");
@@ -64,15 +67,16 @@ export default function App() {
     };
   }, [token]);
 
+    // Logout
   function handleLogout() {
     localStorage.removeItem("token");
     setToken("");
     setMe(null);
   }
 
-  // ============= RENDER =============
+  // RENDER
 
-  // Not logged in -> show the Figma-like login page
+  // Daca utilizatorul NU este logat, afisam pagina de login
   if (!token) {
     return (
       <>
@@ -95,7 +99,7 @@ export default function App() {
     );
   }
 
-  // Logged in -> simple welcome card (you can route to Dashboard later)
+  // Daca utilizatorul este logat, afisam un mic dashboard de confirmare
   return (
     <div
       style={{

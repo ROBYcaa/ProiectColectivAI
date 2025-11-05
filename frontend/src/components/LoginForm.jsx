@@ -7,6 +7,7 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Functia care se executa la apasarea butonului Login
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -15,7 +16,7 @@ export default function LoginForm() {
     try {
       const data = await loginUser(email, password);
       localStorage.setItem("token", data.access_token);
-      window.location.href = "/projects"; // redirect după login
+      window.location.href = "/projects"; // redirect dupa login
     } catch (err) {
       setError(err.message);
     } finally {
@@ -23,6 +24,7 @@ export default function LoginForm() {
     }
   }
 
+   // Interfata vizuala
   return (
     <form
       onSubmit={handleSubmit}
